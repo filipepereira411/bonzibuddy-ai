@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Bonzi Buddy</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Contentor do Assistente */
+        #bonzi-container {
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+            z-index: 1000;
+        }
+
+        /* Balão de Fala */
+        #speech-bubble {
+            background: white;
+            border: 2px solid #4a154b;
+            border-radius: 12px;
+            padding: 10px 15px;
+            max-width: 200px;
+            text-align: center;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
+            margin-bottom: 10px;
+            position: relative;
+            font-size: 14px;
+            display: none;
+        }
+
+        #speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent;
+            display: block;
+            width: 0;
+        }
+
+        #speech-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -13px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 11px 11px 0;
+            border-style: solid;
+            border-color: #4a154b transparent;
+            display: block;
+            width: 0;
+            z-index: -1;
+        }
+
+        /* Personagem (Macaco Roxo) */
+        #bonzi-avatar {
+            width: 100px;
+            height: 100px;
+            background: #8a2be2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            box-shadow: 0px 8px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        #bonzi-avatar:hover {
+            transform: scale(1.05);
+        }
+
+        /* Menu de Opções */
+        #interaction-menu {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        button {
+            background: #4a154b;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        button:hover {
+            background: #6b216d;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="bonzi-container">
+        <div id="speech-bubble">Olá! Eu sou o teu Web Buddy!</div>
+        <div id="bonzi-avatar">🐵</div>
+        <div id="interaction-menu">
+            <button onclick="speak('Olá, parceiro! Em que posso ajudar?')">Cumprimentar</button>
+            <button onclick="tellJoke()">Contar Piada</button>
+            <button onclick="singSong()">Cantar</button>
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('bonzi-container');
+        const bubble = document.getElementById('speech-bubble');
+        const avatar = document.getElementById('bonzi-avatar');
+
+        const jokes = [
+            "Porque é que o computador foi ao médico? Porque tinha um vírus!",
+            "O que diz o bit para o byte? Bem-vindo ao grupo!",
+            "Existem 10 tipos de pessoas no mundo: as que entendem binário e as que não."
+        ];
+
+        // Função para o boneco falar e usar síntese de voz (TTS)
+        function speak(text) {
+            bubble.innerText = text;
+            bubble.style.display = 'block';
+            
+            // Cancela vozes em execução
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'pt-PT'; 
+            
+            // Animação simples enquanto fala
+            avatar.innerText = '🗣️';
+            utterance.onend = () => {
+                avatar.innerText = '🐵';
+                setTimeout(() => { bubble.style.display = 'none'; }, 3000);
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function tellJoke() {
+            const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
+            speak(randomJoke);
+        }
+
+        function singSong() {
+            speak("Dó Ré Mi Fá, Sol Lá Si, eu sou o roxo mais bonito que vais vir!");
+        }
+
+        // Sistema para arrastar o assistente pelo ecrã (Drag and Drop)
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        container.addEventListener('mousedown', (e) => {
+            if (e.target.tagName === 'BUTTON') return; // Não arrasta ao clicar nos botões
+            isDragging = true;
+            offsetX = e.clientX - container.getBoundingClientRect().left;
+            offsetY = e.clientY - container.getBoundingClientRect().top;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            container.style.left = `${e.clientX - offsetX}px`;
+            container.style.top = `${e.clientY - offsetY}px`;
+            container.style.bottom = 'auto';
+            container.style.right = 'auto';
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+    </script>
+</body>
+</html>
